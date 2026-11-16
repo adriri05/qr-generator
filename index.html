@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Generador de QR</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
   <main class="app">
@@ -20,7 +20,9 @@
         <div class="field">
           <span>Logo central</span>
           <div class="row">
-            <input type="file" id="logo" accept="image/*">
+            <input type="file" id="logo" accept="image/*" hidden>
+            <label for="logo" class="btn btn-secondary">Elegir imagen</label>
+            <span id="logo-name" class="file-name">Sin logo</span>
             <button type="button" id="remove-logo" disabled>Quitar</button>
           </div>
         </div>
@@ -30,17 +32,41 @@
           <input type="range" id="logo-size" min="10" max="40" value="30">
         </label>
 
-        <label class="field">
-          <span>Forma de los puntos</span>
-          <select id="dot-type">
-            <option value="square">Cuadrado</option>
-            <option value="dots">Puntos</option>
-            <option value="rounded">Redondeado</option>
-            <option value="extra-rounded">Muy redondeado</option>
-            <option value="classy">Classy</option>
-            <option value="classy-rounded">Classy redondeado</option>
-          </select>
-        </label>
+        <fieldset class="field shapes">
+          <legend>Forma de los puntos</legend>
+          <div class="shape-grid">
+            <label class="shape" title="Cuadrado">
+              <input type="radio" name="dot-type" value="square" checked>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="9" height="9"/><rect x="13" y="2" width="9" height="9"/><rect x="2" y="13" width="9" height="9"/><rect x="13" y="13" width="9" height="9"/></svg>
+              <span>Cuadrado</span>
+            </label>
+            <label class="shape" title="Puntos">
+              <input type="radio" name="dot-type" value="dots">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4"/><circle cx="17.5" cy="6.5" r="4"/><circle cx="6.5" cy="17.5" r="4"/><circle cx="17.5" cy="17.5" r="4"/></svg>
+              <span>Puntos</span>
+            </label>
+            <label class="shape" title="Redondeado">
+              <input type="radio" name="dot-type" value="rounded">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2"/><rect x="2" y="13" width="9" height="9" rx="2"/><rect x="13" y="13" width="9" height="9" rx="2"/></svg>
+              <span>Redondeado</span>
+            </label>
+            <label class="shape" title="Muy redondeado">
+              <input type="radio" name="dot-type" value="extra-rounded">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="9" height="9" rx="4"/><rect x="13" y="2" width="9" height="9" rx="4"/><rect x="2" y="13" width="9" height="9" rx="4"/><rect x="13" y="13" width="9" height="9" rx="4"/></svg>
+              <span>Muy redond.</span>
+            </label>
+            <label class="shape" title="Classy">
+              <input type="radio" name="dot-type" value="classy">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6a4 4 0 0 1 4-4h5v5a4 4 0 0 1-4 4H2z M13 6a4 4 0 0 1 4-4h5v5a4 4 0 0 1-4 4h-5z M2 17a4 4 0 0 1 4-4h5v5a4 4 0 0 1-4 4H2z M13 17a4 4 0 0 1 4-4h5v5a4 4 0 0 1-4 4h-5z"/></svg>
+              <span>Classy</span>
+            </label>
+            <label class="shape" title="Classy redondeado">
+              <input type="radio" name="dot-type" value="classy-rounded">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4v9H2V7a5 5 0 0 1 5-5z M13 2h5a4 4 0 0 1 4 4v5h-9z M2 13h9v9H6a4 4 0 0 1-4-4z M13 13h9v5a4 4 0 0 1-4 4h-5z"/></svg>
+              <span>Classy red.</span>
+            </label>
+          </div>
+        </fieldset>
 
         <div class="row colors">
           <label class="field">
@@ -70,6 +96,6 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>

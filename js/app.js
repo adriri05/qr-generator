@@ -6,7 +6,8 @@
     removeLogo: $("remove-logo"),
     logoSize: $("logo-size"),
     logoSizeOut: $("logo-size-out"),
-    dotType: $("dot-type"),
+    logoName: $("logo-name"),
+    dotTypes: document.querySelectorAll('input[name="dot-type"]'),
     fg: $("fg"),
     bg: $("bg"),
     warning: $("contrast-warning"),
@@ -20,6 +21,7 @@
   const SETTINGS_KEY = "qr-generator:settings";
   const LOGO_KEY = "qr-generator:logo";
   let logoDataUrl = null;
+  let logoName = "";
 
   // localStorage can throw (private mode, blocked, quota): always guard.
   const store = {
@@ -28,6 +30,9 @@
     del: (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } },
   };
 
+  const getDotType = () => [...el.dotTypes].find((r) => r.checked)?.value || "square";
+  const setDotType = (v) => el.dotTypes.forEach((r) => { r.checked = r.value === v; });
+
   const loadSettings = () => {
     try {
       const s = JSON.parse(store.get(SETTINGS_KEY) || "{}");
@@ -35,7 +40,7 @@
       if (typeof s.logoSize === "string") el.logoSize.value = s.logoSize;
       if (typeof s.fg === "string") el.fg.value = s.fg;
       if (typeof s.bg === "string") el.bg.value = s.bg;
-      if (typeof s.dotType === "string") el.dotType.value = s.dotType;
+      if (typeof s.dotType === "string") setDotType(s.dotType);
     } catch { /* corrupt data: use defaults */ }
     logoDataUrl = store.get(LOGO_KEY);
   };
@@ -46,7 +51,7 @@
       logoSize: el.logoSize.value,
       fg: el.fg.value,
       bg: el.bg.value,
-      dotType: el.dotType.value,
+      dotType: getDotType(),
     }));
     if (logoDataUrl) store.set(LOGO_KEY, logoDataUrl);
     else store.del(LOGO_KEY);
@@ -85,6 +90,7 @@
     el.placeholder.hidden = hasText;
     el.dlPng.disabled = el.dlSvg.disabled = !hasText;
     el.removeLogo.disabled = !logoDataUrl;
+    el.logoName.textContent = logoName || (logoDataUrl ? "Logo guardado" : "Sin logo");
     el.logoSizeOut.textContent = `${el.logoSize.value}%`;
     el.warning.hidden = !lowContrast();
 
@@ -94,7 +100,7 @@
       data: text,
       image: logoDataUrl || undefined,
       imageOptions: { imageSize: el.logoSize.value / 100 },
-      dotsOptions: { color: el.fg.value, type: el.dotType.value },
+      dotsOptions: { color: el.fg.value, type: getDotType() },
       backgroundOptions: { color: el.bg.value },
     });
   };
@@ -106,11 +112,13 @@
   };
 
   el.text.addEventListener("input", debounced);
-  [el.logoSize, el.fg, el.bg, el.dotType].forEach((i) => i.addEventListener("input", render));
+  [el.logoSize, el.fg, el.bg].forEach((i) => i.addEventListener("input", render));
+  el.dotTypes.forEach((r) => r.addEventListener("change", render));
 
   el.logo.addEventListener("change", () => {
     const file = el.logo.files[0];
     if (!file) return;
+    logoName = file.name;
     const reader = new FileReader();
     reader.onload = () => {
       logoDataUrl = reader.result;
@@ -121,6 +129,7 @@
 
   el.removeLogo.addEventListener("click", () => {
     logoDataUrl = null;
+    logoName = "";
     el.logo.value = "";
     render();
   });
