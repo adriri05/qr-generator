@@ -27,6 +27,11 @@
     eccWarning: $("ecc-warning"),
     lengthWarning: $("length-warning"),
     verify: $("verify"),
+    composed: $("composed"),
+    bgFile: $("bg-file"),
+    bgName: $("bg-name"),
+    bgRemove: $("bg-remove"),
+    caption: $("caption"),
     batchFile: $("batch-file"),
     batchText: $("batch-text"),
     batchInfo: $("batch-info"),
@@ -54,6 +59,9 @@
   const THEME_KEY = "qr-generator:theme";
   let logoDataUrl = null;
   let logoName = "";
+  const BG_KEY = "qr-generator:background";
+  let bgDataUrl = null;
+  let bgName = "";
 
   // Inputs persisted by id. Checkboxes use `checked`, the rest use `value`.
   const PERSISTED = [
@@ -63,7 +71,7 @@
     "vc-name", "vc-org", "vc-phone", "vc-email", "vc-url",
     "mail-to", "mail-subject", "mail-body", "tel-number",
     "sms-number", "sms-body", "wa-number", "wa-text", "geo-lat", "geo-lon",
-    "ev-title", "ev-start", "ev-end", "ev-loc", "format",
+    "ev-title", "ev-start", "ev-end", "ev-loc", "format", "caption",
   ].map((id) => $(id));
   const isCheck = (i) => i.type === "checkbox";
 
@@ -87,6 +95,7 @@
       if (typeof s.dotType === "string") setDotType(s.dotType);
     } catch { /* corrupt data: use defaults */ }
     logoDataUrl = store.get(LOGO_KEY);
+    bgDataUrl = store.get(BG_KEY);
   };
 
   const saveSettings = () => {
@@ -95,6 +104,8 @@
     store.set(SETTINGS_KEY, JSON.stringify(s));
     if (logoDataUrl) store.set(LOGO_KEY, logoDataUrl);
     else store.del(LOGO_KEY);
+    if (bgDataUrl) store.set(BG_KEY, bgDataUrl);
+    else store.del(BG_KEY);
   };
 
   // ---- Content builders (one per preset) ----
@@ -241,12 +252,14 @@
     el.gradientOpts.hidden = !el.gradient.checked;
     el.cornerColor.disabled = !el.cornerColorOn.checked;
 
-    el.qr.hidden = !hasData;
+    el.qr.hidden = !hasData || composeActive();
     el.placeholder.hidden = hasData;
     el.placeholder.textContent = info.tooLong ? "Contenido demasiado largo para generar el QR" : PLACEHOLDER_DEFAULT;
     el.download.disabled = el.copy.disabled = !hasData;
     el.removeLogo.disabled = !logoDataUrl;
     el.logoName.textContent = logoName || (logoDataUrl ? "Logo guardado" : "Sin logo");
+    el.bgRemove.disabled = !bgDataUrl;
+    el.bgName.textContent = bgName || (bgDataUrl ? "Imagen guardada" : "Sin imagen");
     el.logoSizeOut.textContent = `${el.logoSize.value}%`;
     el.exportSizeOut.textContent = el.exportSize.value;
     el.marginOut.textContent = el.margin.value;
@@ -260,24 +273,31 @@
       : `Contenido largo (${info.bytes} bytes): el QR será muy denso y puede costar escanearlo. Acórtalo o exporta a mayor tamaño.`;
 
     saveSettings();
-    if (!hasData) { verifyId++; el.verify.hidden = true; return; }
-    qr.update(buildOptions());
-    verify(data);
+    if (!hasData) { verifyId++; previewId++; el.verify.hidden = true; el.composed.hidden = true; return; }
+    if (composeActive()) {
+      drawComposedPreview(data);
+    } else {
+      previewId++;
+      el.composed.hidden = true;
+      qr.update(buildOptions());
+      verify(data);
+    }
   };
 
   // Read verifier: decode the rendered QR with jsQR and compare to the source data.
   let verifyId = 0;
+  // Only problems are shown; a good read (or an inconclusive check) stays silent.
   const showVerify = (cls, msg) => {
+    if (cls !== "fail" && cls !== "warn") { el.verify.hidden = true; return; }
     el.verify.hidden = false;
     el.verify.className = `verify ${cls}`.trim();
     el.verify.textContent = msg;
   };
-  const verify = async (expected) => {
+  const verify = async (expected, blobIn) => {
     const id = ++verifyId;
-    if (typeof jsQR !== "function") { showVerify("", "Verificador no disponible"); return; }
-    showVerify("", "Verificando lectura…");
+    if (typeof jsQR !== "function") { el.verify.hidden = true; return; }
     try {
-      const blob = await qr.getRawData("png");
+      const blob = blobIn || await qr.getRawData("png");
       if (id !== verifyId) return;
       const bmp = await createImageBitmap(blob);
       const cv = document.createElement("canvas");
@@ -290,9 +310,9 @@
       if (id !== verifyId) return;
       if (!res) showVerify("fail", "✗ No se pudo leer: simplifica el estilo, sube el contraste o el nivel de corrección");
       else if (res.data !== expected) showVerify("warn", "⚠ Se lee, pero el contenido decodificado difiere");
-      else showVerify("ok", "✓ Se lee correctamente");
+      else el.verify.hidden = true;
     } catch {
-      if (id === verifyId) showVerify("", "No se pudo verificar");
+      if (id === verifyId) el.verify.hidden = true;
     }
   };
 
@@ -328,16 +348,180 @@
     render();
   });
 
-  // Export from a throwaway instance at the chosen size; preview stays untouched.
-  const exportQr = (extension) => {
-    const size = Number(el.exportSize.value);
-    return new QRCodeStyling({
-      width: size,
-      height: size,
-      type: extension === "svg" ? "svg" : "canvas",
-      ...buildOptions({}, size),
-    });
+  // ---- Composition: optional background image + caption below the QR ----
+  // QR always sits on a solid panel (QR background color) so it stays scannable.
+  const PREVIEW_COMP = 400;
+  const composeActive = () => !!(bgDataUrl || el.caption.value.trim());
+
+  const layout = (size) => {
+    const hasBg = !!bgDataUrl;
+    const cap = el.caption.value.trim();
+    const pw = hasBg ? Math.round(size * 0.72) : size;
+    const capH = cap ? Math.round(pw * 0.14) : 0;
+    const ph = pw + capH;
+    const W = hasBg ? size : pw;
+    const H = hasBg ? size : ph;
+    return {
+      hasBg, cap, pw, capH, ph, W, H,
+      px: Math.round((W - pw) / 2),
+      py: Math.round((H - ph) / 2),
+      r: hasBg ? Math.round(size * 0.03) : 0,
+    };
   };
+
+  const loadImage = (src) => new Promise((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = reject;
+    i.src = src;
+  });
+  const canvasToBlob = (canvas, type) => new Promise((resolve) => canvas.toBlob(resolve, type, 0.95));
+  const xmlEsc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
+  const CAP_FONT = (s) => `700 ${s}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+
+  const qrInstance = (data, px, type) =>
+    new QRCodeStyling({ width: px, height: px, type, ...buildOptions({ data }, px) });
+
+  // Final image (QR alone, or QR + background + caption) as a Blob in png/jpeg/webp/svg.
+  const renderFinal = async (data, size, ext) => {
+    if (!composeActive()) {
+      return qrInstance(data, size, ext === "svg" ? "svg" : "canvas").getRawData(ext);
+    }
+    const L = layout(size);
+
+    if (ext === "svg") {
+      const qrSvg = await (await qrInstance(data, L.pw, "svg").getRawData("svg")).text();
+      const b64 = btoa(unescape(encodeURIComponent(qrSvg)));
+      const fs = Math.min(L.capH * 0.5, (L.pw * 0.9) / (Math.max(L.cap.length, 1) * 0.6));
+      const parts = [
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${L.W}" height="${L.H}" viewBox="0 0 ${L.W} ${L.H}">`,
+      ];
+      if (L.hasBg) {
+        parts.push(`<image href="${bgDataUrl}" x="0" y="0" width="${L.W}" height="${L.H}" preserveAspectRatio="xMidYMid slice"/>`);
+      }
+      parts.push(
+        `<clipPath id="panel"><rect x="${L.px}" y="${L.py}" width="${L.pw}" height="${L.ph}" rx="${L.r}"/></clipPath>`,
+        `<g clip-path="url(#panel)">`,
+        `<rect x="${L.px}" y="${L.py}" width="${L.pw}" height="${L.ph}" fill="${el.bg.value}"/>`,
+        `<image href="data:image/svg+xml;base64,${b64}" x="${L.px}" y="${L.py}" width="${L.pw}" height="${L.pw}"/>`,
+      );
+      if (L.cap) {
+        parts.push(
+          `<text x="${L.px + L.pw / 2}" y="${L.py + L.pw + L.capH / 2}" text-anchor="middle" dominant-baseline="central" ` +
+          `font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-weight="700" font-size="${fs.toFixed(1)}" ` +
+          `fill="${el.fg.value}">${xmlEsc(L.cap)}</text>`,
+        );
+      }
+      parts.push("</g></svg>");
+      return new Blob([parts.join("")], { type: "image/svg+xml" });
+    }
+
+    const qrBlob = await qrInstance(data, L.pw, "canvas").getRawData("png");
+    const [qrImg, bgImg] = await Promise.all([
+      createImageBitmap(qrBlob),
+      L.hasBg ? loadImage(bgDataUrl) : null,
+    ]);
+    const cv = document.createElement("canvas");
+    cv.width = L.W;
+    cv.height = L.H;
+    const ctx = cv.getContext("2d");
+
+    if (bgImg) {
+      // "cover": fill the canvas, crop the overflow.
+      const k = Math.max(L.W / bgImg.width, L.H / bgImg.height);
+      const w = bgImg.width * k;
+      const h = bgImg.height * k;
+      ctx.drawImage(bgImg, (L.W - w) / 2, (L.H - h) / 2, w, h);
+    }
+
+    ctx.save();
+    ctx.beginPath();
+    if (L.r > 0 && ctx.roundRect) ctx.roundRect(L.px, L.py, L.pw, L.ph, L.r);
+    else ctx.rect(L.px, L.py, L.pw, L.ph);
+    ctx.clip();
+    ctx.fillStyle = el.bg.value;
+    ctx.fillRect(L.px, L.py, L.pw, L.ph);
+    ctx.drawImage(qrImg, L.px, L.py, L.pw, L.pw);
+    if (L.cap) {
+      let fs = Math.round(L.capH * 0.5);
+      ctx.font = CAP_FONT(fs);
+      const maxW = L.pw * 0.9;
+      const w = ctx.measureText(L.cap).width;
+      if (w > maxW) { fs = Math.max(8, Math.floor(fs * (maxW / w))); ctx.font = CAP_FONT(fs); }
+      ctx.fillStyle = el.fg.value;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(L.cap, L.px + L.pw / 2, L.py + L.pw + L.capH / 2);
+    }
+    ctx.restore();
+    return canvasToBlob(cv, `image/${ext}`);
+  };
+
+  const saveBlob = (blob, filename) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  };
+
+  // Preview of the composition (the live QR canvas is hidden while active).
+  let previewId = 0;
+  let previewUrl = null;
+  const drawComposedPreview = async (data) => {
+    const id = ++previewId;
+    try {
+      const blob = await renderFinal(data, PREVIEW_COMP, "png");
+      if (id !== previewId) return;
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = URL.createObjectURL(blob);
+      el.composed.src = previewUrl;
+      el.composed.hidden = false;
+      verify(data, blob);
+    } catch {
+      if (id === previewId) el.verify.hidden = true;
+    }
+  };
+
+  // Background image: downscale to keep localStorage and SVG exports small.
+  const BG_MAX = 1600;
+  const readBackground = async (file) => {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await loadImage(url);
+      const k = Math.min(1, BG_MAX / Math.max(img.width, img.height));
+      const cv = document.createElement("canvas");
+      cv.width = Math.max(1, Math.round(img.width * k));
+      cv.height = Math.max(1, Math.round(img.height * k));
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      return cv.toDataURL("image/jpeg", 0.85);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  el.bgFile.addEventListener("change", async () => {
+    const file = el.bgFile.files[0];
+    if (!file) return;
+    try {
+      bgDataUrl = await readBackground(file);
+      bgName = file.name;
+    } catch {
+      el.bgName.textContent = "No se pudo leer la imagen";
+      return;
+    }
+    render();
+  });
+
+  el.bgRemove.addEventListener("click", () => {
+    bgDataUrl = null;
+    bgName = "";
+    el.bgFile.value = "";
+    render();
+  });
 
   let statusTimer;
   const say = (msg) => {
@@ -346,9 +530,14 @@
     statusTimer = setTimeout(() => { el.status.textContent = ""; }, 2500);
   };
 
-  el.download.addEventListener("click", () => {
+  el.download.addEventListener("click", async () => {
     const ext = el.format.value;
-    exportQr(ext).download({ name: "qr", extension: ext });
+    try {
+      const blob = await renderFinal(getData(), Number(el.exportSize.value), ext);
+      saveBlob(blob, `qr.${ext === "jpeg" ? "jpg" : ext}`);
+    } catch {
+      say("No se pudo exportar la imagen.");
+    }
   });
 
   el.copy.addEventListener("click", async () => {
@@ -359,7 +548,7 @@
     try {
       // Promise form keeps the user-gesture valid in Safari.
       await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": exportQr("png").getRawData("png") }),
+        new ClipboardItem({ "image/png": renderFinal(getData(), Number(el.exportSize.value), "png") }),
       ]);
       say("Imagen copiada.");
     } catch {
@@ -371,6 +560,7 @@
     if (!confirm("¿Restablecer todos los ajustes?")) return;
     store.del(SETTINGS_KEY);
     store.del(LOGO_KEY);
+    store.del(BG_KEY);
     location.reload();
   });
 
@@ -567,13 +757,7 @@
         el.batchStatus.textContent = `Generando ${i + 1}/${items.length}…`;
         const { name, data } = items[i];
         if (lengthInfo(data).tooLong) { skipped.push(i + 1); continue; }
-        const out = new QRCodeStyling({
-          width: size,
-          height: size,
-          type: ext === "svg" ? "svg" : "canvas",
-          ...buildOptions({ data }, size),
-        });
-        const blob = await out.getRawData(ext);
+        const blob = await renderFinal(data, size, ext);
         const base = safeName(name, `qr-${String(i + 1).padStart(pad, "0")}`);
         let unique = base, n = 2;
         while (used.has(unique.toLowerCase())) unique = `${base}-${n++}`;
@@ -584,11 +768,7 @@
       if (done === 0) { el.batchStatus.textContent = "Ninguna fila se pudo generar (contenido demasiado largo)."; return; }
       el.batchStatus.textContent = "Comprimiendo…";
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(zipBlob);
-      a.download = "qr-lote.zip";
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      saveBlob(zipBlob, "qr-lote.zip");
       el.batchStatus.textContent = `Listo: ${done} QR en el ZIP.` + (skipped.length ? ` Omitidas por largas: filas ${skipped.join(", ")}.` : "");
     } catch {
       el.batchStatus.textContent = "Error al generar el lote.";

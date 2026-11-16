@@ -272,3 +272,31 @@ fieldset.group legend { padding: 0; margin-bottom: 6px; font-size: 0.875rem; col
 .hint { margin: 0; font-size: 0.8125rem; color: var(--muted); }
 .hint code { padding: 1px 4px; font-size: 0.95em; border-radius: 4px; background: color-mix(in srgb, var(--muted) 18%, transparent); }
 #batch-text { font: 0.8125rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
+
+/* composition preview */
+#composed { max-width: 100%; height: auto; border-radius: 6px; }
+#composed[hidden] { display: none; }
+
+/* sticky preview (desktop: sidebar; mobile: top bar, see media query) */
+.layout { align-items: start; }
+.preview {
+  position: sticky;
+  top: 16px;
+  z-index: 5;
+  max-height: calc(100vh - 32px);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
+}
+#qr canvas, #qr svg, #composed { max-height: calc(100vh - 140px); width: auto; }
+
+@media (max-width: 700px) {
+  /* Preview stays pinned on top while the controls scroll underneath. */
+  .preview {
+    order: -1;
+    top: 8px;
+    min-height: 0;
+    max-height: 46vh;
+    padding: 10px;
+    gap: 8px;
+  }
+  #qr canvas, #qr svg, #composed { max-height: calc(46vh - 70px); }
+}

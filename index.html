@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Generador de QR</title>
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=15">
 </head>
 <body>
   <main class="app">
@@ -116,6 +116,24 @@
           <label class="field">
             <span>Tamaño del logo: <output id="logo-size-out">30%</output></span>
             <input type="range" id="logo-size" min="10" max="40" value="30">
+          </label>
+        </section>
+
+        <section class="block">
+          <h2>Composición</h2>
+          <p class="hint">Opcional: imagen de fondo y texto bajo el QR. El QR siempre va sobre un panel del color de fondo para que siga leyéndose.</p>
+          <div class="field">
+            <span>Imagen de fondo</span>
+            <div class="row">
+              <input type="file" id="bg-file" accept="image/*" hidden>
+              <label for="bg-file" class="btn btn-secondary">Elegir imagen</label>
+              <span id="bg-name" class="file-name">Sin imagen</span>
+              <button type="button" id="bg-remove" class="secondary" disabled>Quitar</button>
+            </div>
+          </div>
+          <label class="field">
+            <span>Texto bajo el QR</span>
+            <input type="text" id="caption" maxlength="60" placeholder="Escanéame" autocomplete="off">
           </label>
         </section>
 
@@ -292,6 +310,7 @@
 
       <section class="preview" aria-live="polite">
         <div id="qr"></div>
+        <img id="composed" alt="Vista previa del QR con composición" hidden>
         <p id="placeholder" class="placeholder">Escribe un texto para generar el QR</p>
         <p id="verify" class="verify" role="status" hidden></p>
       </section>
@@ -301,6 +320,6 @@
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="js/app.js?v=13"></script>
+  <script src="js/app.js?v=15"></script>
 </body>
 </html>

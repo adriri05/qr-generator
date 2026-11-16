@@ -35,7 +35,7 @@ Corrección de errores seleccionable (L/M/Q/H, por defecto H). Con logo usa Q o 
 - [x] Descarga en JPEG/WEBP
 - [ ] Logo con fondo propio (círculo/cuadrado) y forma redonda
 - [x] Margen (quiet zone) configurable
-- [ ] Imagen de fondo o texto debajo del QR
+- [x] Imagen de fondo o texto debajo del QR
 - [x] Nivel de corrección de errores seleccionable (L/M/Q/H)
 - [x] Aviso si el contenido es demasiado largo para escanear bien
 - [x] Generación por lotes desde CSV (descarga en ZIP)
