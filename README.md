@@ -11,11 +11,13 @@ Abrir `index.html` en el navegador (o `npx serve .`).
 3. Elige colores, degradado y estilo de esquinas.
 4. Elige tamaño y formato (PNG, JPEG, WEBP, SVG) y descarga o copia la imagen.
 
-Corrección de errores nivel H fijo para que el logo no rompa la lectura. Si un QR no escanea, baja el tamaño del logo.
+Corrección de errores seleccionable (L/M/Q/H, por defecto H). Con logo usa Q o H. Si un QR no escanea, baja el tamaño del logo.
 
 ## Stack
 
 - [qr-code-styling](https://github.com/kozakdenys/qr-code-styling) 1.9.2 vía jsDelivr.
+- [JSZip](https://stuk.github.io/jszip/) 3.10.1 vía jsDelivr (lotes).
+- [jsQR](https://github.com/cozmo/jsQR) 1.4.0 vía jsDelivr (verificador de lectura).
 
 ## Roadmap
 
@@ -31,3 +33,14 @@ Corrección de errores nivel H fijo para que el logo no rompa la lectura. Si un 
 - [x] Botón de restablecer ajustes
 - [x] Tema claro/oscuro manual
 - [x] Descarga en JPEG/WEBP
+- [ ] Logo con fondo propio (círculo/cuadrado) y forma redonda
+- [x] Margen (quiet zone) configurable
+- [ ] Imagen de fondo o texto debajo del QR
+- [x] Nivel de corrección de errores seleccionable (L/M/Q/H)
+- [x] Aviso si el contenido es demasiado largo para escanear bien
+- [x] Generación por lotes desde CSV (descarga en ZIP)
+- [ ] Compartir configuración por URL (ajustes en el hash)
+- [ ] PWA instalable y offline (alojar `qr-code-styling` en local)
+- [x] Verificador de lectura del QR generado (`jsQR`)
+- [ ] Plantillas guardadas de estilos
+- [ ] Tests e2e con Playwright

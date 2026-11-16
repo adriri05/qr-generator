@@ -63,7 +63,28 @@ h1 { margin: 0; font-size: 1.5rem; }
   padding: 16px;
 }
 
-.controls { display: flex; flex-direction: column; gap: 14px; }
+.controls { display: flex; flex-direction: column; gap: 20px; }
+
+.block { display: flex; flex-direction: column; gap: 14px; }
+.block + .block { padding-top: 20px; border-top: 1px solid var(--border); }
+.block > h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.block > h2::before {
+  content: "";
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--accent);
+}
 
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field > span { font-size: 0.875rem; color: var(--muted); }
@@ -159,11 +180,14 @@ button.secondary:hover:not(:disabled) { border-color: var(--accent); }
 .status { margin: 0; min-height: 1.2em; font-size: 0.875rem; color: var(--muted); }
 
 .warning { margin: 0; font-size: 0.875rem; color: var(--warn); }
+.warning.error { color: #dc2626; }
 
 .preview {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 14px;
   min-height: 340px;
 }
 #qr canvas, #qr svg { max-width: 100%; height: auto; }
@@ -224,3 +248,27 @@ fieldset.group legend { padding: 0; margin-bottom: 6px; font-size: 0.875rem; col
 .theme-btn:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .theme-btn svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .theme-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* read verifier */
+.verify {
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  text-align: center;
+  border-radius: 999px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.verify[hidden] { display: none; }
+.verify.ok { color: #15803d; border-color: currentColor; background: color-mix(in srgb, #16a34a 12%, transparent); }
+.verify.warn { color: var(--warn); border-color: currentColor; background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.verify.fail { color: #dc2626; border-color: currentColor; background: color-mix(in srgb, #dc2626 12%, transparent); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .verify.ok { color: #4ade80; }
+}
+:root[data-theme="dark"] .verify.ok { color: #4ade80; }
+
+/* batch */
+.hint { margin: 0; font-size: 0.8125rem; color: var(--muted); }
+.hint code { padding: 1px 4px; font-size: 0.95em; border-radius: 4px; background: color-mix(in srgb, var(--muted) 18%, transparent); }
+#batch-text { font: 0.8125rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
