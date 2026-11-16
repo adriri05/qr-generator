@@ -309,11 +309,17 @@
 
   // Theme: auto (follow OS) -> light -> dark.
   const THEMES = ["auto", "light", "dark"];
-  const LABELS = { auto: "auto", light: "claro", dark: "oscuro" };
+  const LABELS = { auto: "Auto", light: "Claro", dark: "Oscuro" };
+  const ICONS = {
+    auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>',
+    light: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    dark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>',
+  };
   const applyTheme = (t) => {
     if (t === "auto") document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", t);
-    el.theme.textContent = `Tema: ${LABELS[t]}`;
+    el.theme.innerHTML = `${ICONS[t]}<span>${LABELS[t]}</span>`;
+    el.theme.setAttribute("aria-label", `Tema: ${LABELS[t]}. Pulsa para cambiar`);
   };
   let theme = THEMES.includes(store.get(THEME_KEY)) ? store.get(THEME_KEY) : "auto";
   applyTheme(theme);
