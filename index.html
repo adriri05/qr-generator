@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Generador de QR</title>
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
   <main class="app">
@@ -13,9 +13,55 @@
     <div class="layout">
       <form class="controls" onsubmit="return false">
         <label class="field">
-          <span>Texto o URL</span>
-          <textarea id="text" rows="3" placeholder="https://example.com"></textarea>
+          <span>Tipo de contenido</span>
+          <select id="preset">
+            <option value="text">Texto / URL</option>
+            <option value="wifi">WiFi</option>
+            <option value="vcard">vCard (contacto)</option>
+            <option value="email">Email</option>
+            <option value="tel">Teléfono</option>
+          </select>
         </label>
+
+        <div class="panel" data-preset="text">
+          <label class="field">
+            <span>Texto o URL</span>
+            <textarea id="text" rows="3" placeholder="https://example.com"></textarea>
+          </label>
+        </div>
+
+        <div class="panel" data-preset="wifi" hidden>
+          <label class="field"><span>Nombre de red (SSID)</span><input type="text" id="wifi-ssid" autocomplete="off"></label>
+          <label class="field"><span>Contraseña</span><input type="text" id="wifi-pass" autocomplete="off"></label>
+          <div class="row">
+            <label class="field grow"><span>Seguridad</span>
+              <select id="wifi-enc">
+                <option value="WPA">WPA/WPA2/WPA3</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">Sin contraseña</option>
+              </select>
+            </label>
+            <label class="check"><input type="checkbox" id="wifi-hidden"> Red oculta</label>
+          </div>
+        </div>
+
+        <div class="panel" data-preset="vcard" hidden>
+          <label class="field"><span>Nombre completo</span><input type="text" id="vc-name"></label>
+          <label class="field"><span>Empresa</span><input type="text" id="vc-org"></label>
+          <label class="field"><span>Teléfono</span><input type="tel" id="vc-phone"></label>
+          <label class="field"><span>Email</span><input type="email" id="vc-email"></label>
+          <label class="field"><span>Web</span><input type="url" id="vc-url"></label>
+        </div>
+
+        <div class="panel" data-preset="email" hidden>
+          <label class="field"><span>Para</span><input type="email" id="mail-to"></label>
+          <label class="field"><span>Asunto</span><input type="text" id="mail-subject"></label>
+          <label class="field"><span>Mensaje</span><textarea id="mail-body" rows="3"></textarea></label>
+        </div>
+
+        <div class="panel" data-preset="tel" hidden>
+          <label class="field"><span>Número</span><input type="tel" id="tel-number" placeholder="+34 600 000 000"></label>
+        </div>
 
         <div class="field">
           <span>Logo central</span>
@@ -78,9 +124,53 @@
             <input type="color" id="bg" value="#ffffff">
           </label>
         </div>
+
+        <div class="field">
+          <label class="check"><input type="checkbox" id="gradient"> Degradado</label>
+          <div class="row" id="gradient-opts" hidden>
+            <label class="field grow"><span>Color final</span><input type="color" id="fg2" value="#2563eb"></label>
+            <label class="field grow"><span>Tipo</span>
+              <select id="grad-type">
+                <option value="linear">Lineal</option>
+                <option value="radial">Radial</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <fieldset class="field group">
+          <legend>Esquinas</legend>
+          <div class="row">
+            <label class="field grow"><span>Marco</span>
+              <select id="corner-sq">
+                <option value="">Como los puntos</option>
+                <option value="square">Cuadrado</option>
+                <option value="dot">Circular</option>
+                <option value="extra-rounded">Redondeado</option>
+              </select>
+            </label>
+            <label class="field grow"><span>Centro</span>
+              <select id="corner-dot">
+                <option value="">Como los puntos</option>
+                <option value="square">Cuadrado</option>
+                <option value="dot">Circular</option>
+              </select>
+            </label>
+          </div>
+          <div class="row">
+            <label class="check"><input type="checkbox" id="corner-color-on"> Color propio</label>
+            <input type="color" id="corner-color" value="#000000" class="inline-color" disabled>
+          </div>
+        </fieldset>
+
         <p id="contrast-warning" class="warning" hidden>
           Contraste bajo: el fondo debe ser más claro que el QR o puede no escanear.
         </p>
+
+        <label class="field">
+          <span>Tamaño de exportación: <output id="export-size-out">1000</output> px</span>
+          <input type="range" id="export-size" min="300" max="2000" step="100" value="1000">
+        </label>
 
         <div class="row">
           <button type="button" id="dl-png" disabled>Descargar PNG</button>
@@ -96,6 +186,6 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>

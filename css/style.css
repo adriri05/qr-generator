@@ -157,3 +157,24 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 @media (max-width: 700px) {
   .layout { grid-template-columns: 1fr; }
 }
+
+/* presets, gradient, corners */
+input[type="text"], input[type="tel"], input[type="email"], input[type="url"], select {
+  width: 100%;
+  padding: 8px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+select option { color: #1c1e21; background: #fff; }
+.panel { display: flex; flex-direction: column; gap: 14px; }
+.panel[hidden], #gradient-opts[hidden] { display: none; }
+.grow { flex: 1; min-width: 120px; }
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--muted); cursor: pointer; }
+.check input { accent-color: var(--accent); }
+fieldset.group { border: 0; margin: 0; padding: 0; min-width: 0; }
+fieldset.group legend { padding: 0; margin-bottom: 6px; font-size: 0.875rem; color: var(--muted); }
+.inline-color { width: 56px; height: 32px; }
+.inline-color:disabled { opacity: 0.45; cursor: not-allowed; }

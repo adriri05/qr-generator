@@ -6,10 +6,10 @@ Generador de QR con imagen/logo en el centro. Web estática, sin build ni backen
 
 Abrir `index.html` en el navegador (o `npx serve .`).
 
-1. Escribe texto o URL.
+1. Elige tipo (texto/URL, WiFi, vCard, email, teléfono) y rellena los datos.
 2. (Opcional) sube un logo y ajusta tamaño.
-3. Elige colores.
-4. Descarga PNG o SVG.
+3. Elige colores, degradado y estilo de esquinas.
+4. Elige tamaño de exportación y descarga PNG o SVG.
 
 Corrección de errores nivel H fijo para que el logo no rompa la lectura. Si un QR no escanea, baja el tamaño del logo.
 
@@ -20,9 +20,9 @@ Corrección de errores nivel H fijo para que el logo no rompa la lectura. Si un 
 ## Roadmap
 
 - [x] Forma de puntos (`dotsOptions.type`)
-- [ ] Estilo/color de esquinas (`cornersSquareOptions`, `cornersDotOptions`)
-- [ ] Gradientes
-- [ ] Presets: WiFi, vCard, email, teléfono
-- [ ] Tamaño de exportación configurable
+- [x] Estilo/color de esquinas (`cornersSquareOptions`, `cornersDotOptions`)
+- [x] Gradientes
+- [x] Presets: WiFi, vCard, email, teléfono
+- [x] Tamaño de exportación configurable
 - [x] Persistir ajustes en `localStorage` (texto, logo, tamaño, colores, forma)
-- [ ] Deploy GitHub Pages / Vercel
+- [x] Deploy GitHub Pages / Vercel
