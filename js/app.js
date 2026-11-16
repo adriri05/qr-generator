@@ -70,7 +70,7 @@
   // localStorage can throw (private mode, blocked, quota): always guard.
   const store = {
     get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
-    set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* ignore */ } },
+    set: (k, v) => { try { localStorage.setItem(k, v); return true; } catch { return false; } },
     del: (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } },
   };
 
@@ -395,6 +395,100 @@
     store.set(THEME_KEY, theme);
     applyTheme(theme);
   });
+
+  // ---- Style templates (saved in localStorage; content is never saved) ----
+  const TEMPLATES_KEY = "qr-generator:templates";
+  const STYLE_IDS = [
+    "ecc", "logo-size", "fg", "bg", "gradient", "fg2", "grad-type",
+    "corner-sq", "corner-dot", "corner-color-on", "corner-color", "margin",
+  ];
+  const tpl = {
+    select: $("tpl-select"),
+    name: $("tpl-name"),
+    save: $("tpl-save"),
+    del: $("tpl-delete"),
+    withLogo: $("tpl-logo"),
+    status: $("tpl-status"),
+  };
+
+  const readTemplates = () => {
+    try {
+      const t = JSON.parse(store.get(TEMPLATES_KEY) || "{}");
+      return t && typeof t === "object" && !Array.isArray(t) ? t : {};
+    } catch { return {}; }
+  };
+
+  let tplTimer;
+  const tplSay = (msg) => {
+    tpl.status.textContent = msg;
+    clearTimeout(tplTimer);
+    tplTimer = setTimeout(() => { tpl.status.textContent = ""; }, 3000);
+  };
+
+  const fillTemplateSelect = (selected = "") => {
+    const names = Object.keys(readTemplates()).sort((a, b) => a.localeCompare(b));
+    tpl.select.innerHTML = "";
+    const first = document.createElement("option");
+    first.value = "";
+    first.textContent = names.length ? "— Elegir plantilla —" : "Sin plantillas guardadas";
+    tpl.select.append(first);
+    names.forEach((n) => {
+      const o = document.createElement("option");
+      o.value = n;
+      o.textContent = n;
+      tpl.select.append(o);
+    });
+    tpl.select.value = names.includes(selected) ? selected : "";
+    tpl.del.disabled = !tpl.select.value;
+  };
+
+  tpl.save.addEventListener("click", () => {
+    const name = tpl.name.value.trim();
+    if (!name) { tplSay("Escribe un nombre para la plantilla."); tpl.name.focus(); return; }
+    const all = readTemplates();
+    const existed = Object.prototype.hasOwnProperty.call(all, name);
+    const t = { dotType: getDotType() };
+    STYLE_IDS.forEach((id) => { const i = $(id); t[id] = isCheck(i) ? i.checked : i.value; });
+    if (tpl.withLogo.checked && logoDataUrl) t.logo = logoDataUrl;
+    all[name] = t;
+    if (!store.set(TEMPLATES_KEY, JSON.stringify(all))) {
+      tplSay("No se pudo guardar (almacenamiento lleno). Prueba sin logo.");
+      return;
+    }
+    fillTemplateSelect(name);
+    tplSay(existed ? `Plantilla "${name}" actualizada.` : `Plantilla "${name}" guardada.`);
+  });
+
+  tpl.select.addEventListener("change", () => {
+    const name = tpl.select.value;
+    tpl.del.disabled = !name;
+    if (!name) return;
+    const t = readTemplates()[name];
+    if (!t) return;
+    STYLE_IDS.forEach((id) => {
+      const i = $(id);
+      if (isCheck(i)) { if (typeof t[id] === "boolean") i.checked = t[id]; }
+      else if (typeof t[id] === "string") i.value = t[id];
+    });
+    if (typeof t.dotType === "string") setDotType(t.dotType);
+    if (typeof t.logo === "string") { logoDataUrl = t.logo; logoName = ""; }
+    tpl.name.value = name;
+    render();
+    tplSay(`Plantilla "${name}" aplicada.`);
+  });
+
+  tpl.del.addEventListener("click", () => {
+    const name = tpl.select.value;
+    if (!name || !confirm(`¿Eliminar la plantilla "${name}"?`)) return;
+    const all = readTemplates();
+    delete all[name];
+    store.set(TEMPLATES_KEY, JSON.stringify(all));
+    fillTemplateSelect();
+    tpl.name.value = "";
+    tplSay(`Plantilla "${name}" eliminada.`);
+  });
+
+  fillTemplateSelect();
 
   // ---- Batch: CSV -> ZIP ----
   const MAX_BATCH = 500;

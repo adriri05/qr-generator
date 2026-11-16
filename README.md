@@ -39,8 +39,7 @@ Corrección de errores seleccionable (L/M/Q/H, por defecto H). Con logo usa Q o 
 - [x] Nivel de corrección de errores seleccionable (L/M/Q/H)
 - [x] Aviso si el contenido es demasiado largo para escanear bien
 - [x] Generación por lotes desde CSV (descarga en ZIP)
-- [ ] Compartir configuración por URL (ajustes en el hash)
 - [ ] PWA instalable y offline (alojar `qr-code-styling` en local)
 - [x] Verificador de lectura del QR generado (`jsQR`)
-- [ ] Plantillas guardadas de estilos
+- [x] Plantillas guardadas de estilos
 - [ ] Tests e2e con Playwright

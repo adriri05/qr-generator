@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Generador de QR</title>
-  <link rel="stylesheet" href="css/style.css?v=12">
+  <link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body>
   <main class="app">
@@ -233,6 +233,21 @@
         </section>
 
         <section class="block">
+          <h2>Plantillas</h2>
+          <p class="hint">Guarda el estilo actual (colores, forma, esquinas, calidad, margen) para reutilizarlo. El contenido no se guarda.</p>
+          <div class="row">
+            <select id="tpl-select" class="grow" aria-label="Plantillas guardadas"></select>
+            <button type="button" id="tpl-delete" class="secondary" disabled>Eliminar</button>
+          </div>
+          <div class="row">
+            <input type="text" id="tpl-name" class="grow" placeholder="Nombre de la plantilla" maxlength="60" aria-label="Nombre de la plantilla">
+            <button type="button" id="tpl-save">Guardar</button>
+          </div>
+          <label class="check"><input type="checkbox" id="tpl-logo" checked> Incluir logo</label>
+          <p id="tpl-status" class="status" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="block">
           <h2>Exportación</h2>
           <label class="field">
             <span>Tamaño de exportación: <output id="export-size-out">1000</output> px</span>
@@ -286,6 +301,6 @@
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
 </html>
