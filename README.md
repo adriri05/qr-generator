@@ -19,10 +19,10 @@ Corrección de errores nivel H fijo para que el logo no rompa la lectura. Si un 
 
 ## Roadmap
 
-- [ ] Forma de puntos (`dotsOptions.type`)
+- [x] Forma de puntos (`dotsOptions.type`)
 - [ ] Estilo/color de esquinas (`cornersSquareOptions`, `cornersDotOptions`)
 - [ ] Gradientes
 - [ ] Presets: WiFi, vCard, email, teléfono
 - [ ] Tamaño de exportación configurable
-- [ ] Persistir ajustes en `localStorage`
+- [x] Persistir ajustes en `localStorage` (texto, logo, tamaño, colores, forma)
 - [ ] Deploy GitHub Pages / Vercel

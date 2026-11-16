@@ -58,7 +58,7 @@ h1 { margin: 0 0 16px; font-size: 1.5rem; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .colors .field { flex: 1; }
 
-textarea {
+textarea, select {
   width: 100%;
   padding: 8px;
   font: inherit;

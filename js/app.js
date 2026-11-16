@@ -6,6 +6,7 @@
     removeLogo: $("remove-logo"),
     logoSize: $("logo-size"),
     logoSizeOut: $("logo-size-out"),
+    dotType: $("dot-type"),
     fg: $("fg"),
     bg: $("bg"),
     warning: $("contrast-warning"),
@@ -16,7 +17,40 @@
   };
 
   const SIZE = 300;
+  const SETTINGS_KEY = "qr-generator:settings";
+  const LOGO_KEY = "qr-generator:logo";
   let logoDataUrl = null;
+
+  // localStorage can throw (private mode, blocked, quota): always guard.
+  const store = {
+    get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* ignore */ } },
+    del: (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } },
+  };
+
+  const loadSettings = () => {
+    try {
+      const s = JSON.parse(store.get(SETTINGS_KEY) || "{}");
+      if (typeof s.text === "string") el.text.value = s.text;
+      if (typeof s.logoSize === "string") el.logoSize.value = s.logoSize;
+      if (typeof s.fg === "string") el.fg.value = s.fg;
+      if (typeof s.bg === "string") el.bg.value = s.bg;
+      if (typeof s.dotType === "string") el.dotType.value = s.dotType;
+    } catch { /* corrupt data: use defaults */ }
+    logoDataUrl = store.get(LOGO_KEY);
+  };
+
+  const saveSettings = () => {
+    store.set(SETTINGS_KEY, JSON.stringify({
+      text: el.text.value,
+      logoSize: el.logoSize.value,
+      fg: el.fg.value,
+      bg: el.bg.value,
+      dotType: el.dotType.value,
+    }));
+    if (logoDataUrl) store.set(LOGO_KEY, logoDataUrl);
+    else store.del(LOGO_KEY);
+  };
 
   const qr = new QRCodeStyling({
     width: SIZE,
@@ -54,12 +88,13 @@
     el.logoSizeOut.textContent = `${el.logoSize.value}%`;
     el.warning.hidden = !lowContrast();
 
+    saveSettings();
     if (!hasText) return;
     qr.update({
       data: text,
       image: logoDataUrl || undefined,
       imageOptions: { imageSize: el.logoSize.value / 100 },
-      dotsOptions: { color: el.fg.value },
+      dotsOptions: { color: el.fg.value, type: el.dotType.value },
       backgroundOptions: { color: el.bg.value },
     });
   };
@@ -71,7 +106,7 @@
   };
 
   el.text.addEventListener("input", debounced);
-  [el.logoSize, el.fg, el.bg].forEach((i) => i.addEventListener("input", render));
+  [el.logoSize, el.fg, el.bg, el.dotType].forEach((i) => i.addEventListener("input", render));
 
   el.logo.addEventListener("change", () => {
     const file = el.logo.files[0];
@@ -93,5 +128,6 @@
   el.dlPng.addEventListener("click", () => qr.download({ name: "qr", extension: "png" }));
   el.dlSvg.addEventListener("click", () => qr.download({ name: "qr", extension: "svg" }));
 
+  loadSettings();
   render();
 })();
