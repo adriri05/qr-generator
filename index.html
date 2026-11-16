@@ -1,280 +1,286 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Generador de QR</title>
-  <link rel="stylesheet" href="css/style.css?v=15">
+  <title>QR Generator</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css?v=16">
 </head>
 <body>
   <main class="app">
     <header class="top">
-      <h1>Generador de QR</h1>
-      <button type="button" id="theme" class="secondary theme-btn" title="Cambiar tema" aria-label="Cambiar tema"></button>
+      <h1 data-i18n="app.title">QR Generator</h1>
+      <div class="top-actions">
+        <button type="button" id="lang" class="secondary theme-btn" data-i18n-title="lang.title" title="Switch language"></button>
+        <button type="button" id="theme" class="secondary theme-btn" data-i18n-title="theme.title" title="Change theme"></button>
+      </div>
     </header>
 
     <div class="layout">
       <form class="controls" onsubmit="return false">
         <section class="block">
-          <h2>Contenido</h2>
+          <h2 data-i18n="sec.content">Content</h2>
           <label class="field">
-            <span>Tipo de contenido</span>
+            <span data-i18n="content.type">Content type</span>
             <select id="preset">
-              <option value="text">Texto / URL</option>
-              <option value="wifi">WiFi</option>
-              <option value="vcard">vCard (contacto)</option>
-              <option value="email">Email</option>
-              <option value="tel">Teléfono</option>
-              <option value="sms">SMS</option>
-              <option value="whatsapp">WhatsApp</option>
-              <option value="geo">Ubicación (geo)</option>
-              <option value="event">Evento de calendario</option>
+              <option value="text" data-i18n="preset.text">Text / URL</option>
+              <option value="wifi" data-i18n="preset.wifi">WiFi</option>
+              <option value="vcard" data-i18n="preset.vcard">vCard (contact)</option>
+              <option value="email" data-i18n="preset.email">Email</option>
+              <option value="tel" data-i18n="preset.tel">Phone</option>
+              <option value="sms" data-i18n="preset.sms">SMS</option>
+              <option value="whatsapp" data-i18n="preset.whatsapp">WhatsApp</option>
+              <option value="geo" data-i18n="preset.geo">Location (geo)</option>
+              <option value="event" data-i18n="preset.event">Calendar event</option>
             </select>
           </label>
 
           <div class="panel" data-preset="text">
             <label class="field">
-              <span>Texto o URL</span>
+              <span data-i18n="text.label">Text or URL</span>
               <textarea id="text" rows="3" placeholder="https://example.com"></textarea>
             </label>
           </div>
 
           <div class="panel" data-preset="wifi" hidden>
-            <label class="field"><span>Nombre de red (SSID)</span><input type="text" id="wifi-ssid" autocomplete="off"></label>
-            <label class="field"><span>Contraseña</span><input type="text" id="wifi-pass" autocomplete="off"></label>
+            <label class="field"><span data-i18n="wifi.ssid">Network name (SSID)</span><input type="text" id="wifi-ssid" autocomplete="off"></label>
+            <label class="field"><span data-i18n="wifi.pass">Password</span><input type="text" id="wifi-pass" autocomplete="off"></label>
             <div class="row">
-              <label class="field grow"><span>Seguridad</span>
+              <label class="field grow"><span data-i18n="wifi.security">Security</span>
                 <select id="wifi-enc">
                   <option value="WPA">WPA/WPA2/WPA3</option>
                   <option value="WEP">WEP</option>
-                  <option value="nopass">Sin contraseña</option>
+                  <option value="nopass" data-i18n="wifi.nopass">No password</option>
                 </select>
               </label>
-              <label class="check"><input type="checkbox" id="wifi-hidden"> Red oculta</label>
+              <label class="check"><input type="checkbox" id="wifi-hidden"> <span data-i18n="wifi.hidden">Hidden network</span></label>
             </div>
           </div>
 
           <div class="panel" data-preset="vcard" hidden>
-            <label class="field"><span>Nombre completo</span><input type="text" id="vc-name"></label>
-            <label class="field"><span>Empresa</span><input type="text" id="vc-org"></label>
-            <label class="field"><span>Teléfono</span><input type="tel" id="vc-phone"></label>
-            <label class="field"><span>Email</span><input type="email" id="vc-email"></label>
-            <label class="field"><span>Web</span><input type="url" id="vc-url"></label>
+            <label class="field"><span data-i18n="field.name">Full name</span><input type="text" id="vc-name"></label>
+            <label class="field"><span data-i18n="field.company">Company</span><input type="text" id="vc-org"></label>
+            <label class="field"><span data-i18n="field.phone">Phone</span><input type="tel" id="vc-phone"></label>
+            <label class="field"><span data-i18n="field.email">Email</span><input type="email" id="vc-email"></label>
+            <label class="field"><span data-i18n="field.website">Website</span><input type="url" id="vc-url"></label>
           </div>
 
           <div class="panel" data-preset="email" hidden>
-            <label class="field"><span>Para</span><input type="email" id="mail-to"></label>
-            <label class="field"><span>Asunto</span><input type="text" id="mail-subject"></label>
-            <label class="field"><span>Mensaje</span><textarea id="mail-body" rows="3"></textarea></label>
+            <label class="field"><span data-i18n="field.to">To</span><input type="email" id="mail-to"></label>
+            <label class="field"><span data-i18n="field.subject">Subject</span><input type="text" id="mail-subject"></label>
+            <label class="field"><span data-i18n="field.message">Message</span><textarea id="mail-body" rows="3"></textarea></label>
           </div>
 
           <div class="panel" data-preset="tel" hidden>
-            <label class="field"><span>Número</span><input type="tel" id="tel-number" placeholder="+34 600 000 000"></label>
+            <label class="field"><span data-i18n="field.number">Number</span><input type="tel" id="tel-number" placeholder="+1 555 000 0000"></label>
           </div>
 
           <div class="panel" data-preset="sms" hidden>
-            <label class="field"><span>Número</span><input type="tel" id="sms-number" placeholder="+34 600 000 000"></label>
-            <label class="field"><span>Mensaje</span><textarea id="sms-body" rows="3"></textarea></label>
+            <label class="field"><span data-i18n="field.number">Number</span><input type="tel" id="sms-number" placeholder="+1 555 000 0000"></label>
+            <label class="field"><span data-i18n="field.message">Message</span><textarea id="sms-body" rows="3"></textarea></label>
           </div>
 
           <div class="panel" data-preset="whatsapp" hidden>
-            <label class="field"><span>Número (con prefijo internacional)</span><input type="tel" id="wa-number" placeholder="+34 600 000 000"></label>
-            <label class="field"><span>Mensaje (opcional)</span><textarea id="wa-text" rows="3"></textarea></label>
+            <label class="field"><span data-i18n="wa.number">Number (with country code)</span><input type="tel" id="wa-number" placeholder="+1 555 000 0000"></label>
+            <label class="field"><span data-i18n="wa.message">Message (optional)</span><textarea id="wa-text" rows="3"></textarea></label>
           </div>
 
           <div class="panel" data-preset="geo" hidden>
             <div class="row">
-              <label class="field grow"><span>Latitud</span><input type="text" id="geo-lat" inputmode="decimal" placeholder="40.4168"></label>
-              <label class="field grow"><span>Longitud</span><input type="text" id="geo-lon" inputmode="decimal" placeholder="-3.7038"></label>
+              <label class="field grow"><span data-i18n="geo.lat">Latitude</span><input type="text" id="geo-lat" inputmode="decimal" placeholder="40.4168"></label>
+              <label class="field grow"><span data-i18n="geo.lon">Longitude</span><input type="text" id="geo-lon" inputmode="decimal" placeholder="-3.7038"></label>
             </div>
           </div>
 
           <div class="panel" data-preset="event" hidden>
-            <label class="field"><span>Título</span><input type="text" id="ev-title"></label>
+            <label class="field"><span data-i18n="ev.title">Title</span><input type="text" id="ev-title"></label>
             <div class="row">
-              <label class="field grow"><span>Inicio</span><input type="datetime-local" id="ev-start"></label>
-              <label class="field grow"><span>Fin</span><input type="datetime-local" id="ev-end"></label>
+              <label class="field grow"><span data-i18n="ev.start">Start</span><input type="datetime-local" id="ev-start"></label>
+              <label class="field grow"><span data-i18n="ev.end">End</span><input type="datetime-local" id="ev-end"></label>
             </div>
-            <label class="field"><span>Lugar</span><input type="text" id="ev-loc"></label>
+            <label class="field"><span data-i18n="ev.place">Place</span><input type="text" id="ev-loc"></label>
           </div>
 
           <p id="length-warning" class="warning" hidden></p>
         </section>
 
         <section class="block">
-          <h2>Logo</h2>
+          <h2 data-i18n="sec.logo">Logo</h2>
           <div class="field">
-            <span>Logo central</span>
+            <span data-i18n="logo.center">Center logo</span>
             <div class="row">
               <input type="file" id="logo" accept="image/*" hidden>
-              <label for="logo" class="btn btn-secondary">Elegir imagen</label>
-              <span id="logo-name" class="file-name">Sin logo</span>
-              <button type="button" id="remove-logo" disabled>Quitar</button>
+              <label for="logo" class="btn btn-secondary" data-i18n="btn.choose">Choose image</label>
+              <span id="logo-name" class="file-name">No logo</span>
+              <button type="button" id="remove-logo" data-i18n="btn.remove" disabled>Remove</button>
             </div>
           </div>
 
           <label class="field">
-            <span>Tamaño del logo: <output id="logo-size-out">30%</output></span>
+            <span><span data-i18n="logo.size">Logo size</span>: <output id="logo-size-out">30%</output></span>
             <input type="range" id="logo-size" min="10" max="40" value="30">
           </label>
         </section>
 
         <section class="block">
-          <h2>Composición</h2>
-          <p class="hint">Opcional: imagen de fondo y texto bajo el QR. El QR siempre va sobre un panel del color de fondo para que siga leyéndose.</p>
+          <h2 data-i18n="sec.composition">Composition</h2>
+          <p class="hint" data-i18n="comp.hint">Optional: background image and text under the QR. The QR always sits on a panel of the background color so it stays readable.</p>
           <div class="field">
-            <span>Imagen de fondo</span>
+            <span data-i18n="comp.bg">Background image</span>
             <div class="row">
               <input type="file" id="bg-file" accept="image/*" hidden>
-              <label for="bg-file" class="btn btn-secondary">Elegir imagen</label>
-              <span id="bg-name" class="file-name">Sin imagen</span>
-              <button type="button" id="bg-remove" class="secondary" disabled>Quitar</button>
+              <label for="bg-file" class="btn btn-secondary" data-i18n="btn.choose">Choose image</label>
+              <span id="bg-name" class="file-name">No image</span>
+              <button type="button" id="bg-remove" class="secondary" data-i18n="btn.remove" disabled>Remove</button>
             </div>
           </div>
           <label class="field">
-            <span>Texto bajo el QR</span>
-            <input type="text" id="caption" maxlength="60" placeholder="Escanéame" autocomplete="off">
+            <span data-i18n="comp.caption">Text below the QR</span>
+            <input type="text" id="caption" maxlength="60" data-i18n-placeholder="comp.captionPlaceholder" placeholder="Scan me" autocomplete="off">
           </label>
         </section>
 
         <section class="block">
-          <h2>Estilo</h2>
+          <h2 data-i18n="sec.style">Style</h2>
           <fieldset class="field shapes">
-            <legend>Forma de los puntos</legend>
+            <legend data-i18n="style.dots">Dot shape</legend>
             <div class="shape-grid">
-              <label class="shape" title="Cuadrado">
+              <label class="shape" data-i18n-title="shape.square" title="Square">
                 <input type="radio" name="dot-type" value="square" checked>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="9" height="9"/><rect x="13" y="2" width="9" height="9"/><rect x="2" y="13" width="9" height="9"/><rect x="13" y="13" width="9" height="9"/></svg>
-                <span>Cuadrado</span>
+                <span data-i18n="shape.square">Square</span>
               </label>
-              <label class="shape" title="Puntos">
+              <label class="shape" data-i18n-title="shape.dots" title="Dots">
                 <input type="radio" name="dot-type" value="dots">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4"/><circle cx="17.5" cy="6.5" r="4"/><circle cx="6.5" cy="17.5" r="4"/><circle cx="17.5" cy="17.5" r="4"/></svg>
-                <span>Puntos</span>
+                <span data-i18n="shape.dots">Dots</span>
               </label>
-              <label class="shape" title="Redondeado">
+              <label class="shape" data-i18n-title="shape.rounded" title="Rounded">
                 <input type="radio" name="dot-type" value="rounded">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="9" height="9" rx="2"/><rect x="13" y="2" width="9" height="9" rx="2"/><rect x="2" y="13" width="9" height="9" rx="2"/><rect x="13" y="13" width="9" height="9" rx="2"/></svg>
-                <span>Redondeado</span>
+                <span data-i18n="shape.rounded">Rounded</span>
               </label>
-              <label class="shape" title="Muy redondeado">
+              <label class="shape" data-i18n-title="shape.extra" title="Extra rounded">
                 <input type="radio" name="dot-type" value="extra-rounded">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="9" height="9" rx="4"/><rect x="13" y="2" width="9" height="9" rx="4"/><rect x="2" y="13" width="9" height="9" rx="4"/><rect x="13" y="13" width="9" height="9" rx="4"/></svg>
-                <span>Muy redond.</span>
+                <span data-i18n="shape.extraShort">Extra round</span>
               </label>
-              <label class="shape" title="Classy">
+              <label class="shape" data-i18n-title="shape.classy" title="Classy">
                 <input type="radio" name="dot-type" value="classy">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6a4 4 0 0 1 4-4h5v5a4 4 0 0 1-4 4H2z M13 6a4 4 0 0 1 4-4h5v5a4 4 0 0 1-4 4h-5z M2 17a4 4 0 0 1 4-4h5v5a4 4 0 0 1-4 4H2z M13 17a4 4 0 0 1 4-4h5v5a4 4 0 0 1-4 4h-5z"/></svg>
-                <span>Classy</span>
+                <span data-i18n="shape.classy">Classy</span>
               </label>
-              <label class="shape" title="Classy redondeado">
+              <label class="shape" data-i18n-title="shape.classyRounded" title="Classy rounded">
                 <input type="radio" name="dot-type" value="classy-rounded">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4v9H2V7a5 5 0 0 1 5-5z M13 2h5a4 4 0 0 1 4 4v5h-9z M2 13h9v9H6a4 4 0 0 1-4-4z M13 13h9v5a4 4 0 0 1-4 4h-5z"/></svg>
-                <span>Classy red.</span>
+                <span data-i18n="shape.classyRoundedShort">Classy rnd.</span>
               </label>
             </div>
           </fieldset>
 
           <div class="row colors">
             <label class="field">
-              <span>Color QR</span>
+              <span data-i18n="style.fg">QR color</span>
               <input type="color" id="fg" value="#000000">
             </label>
             <label class="field">
-              <span>Fondo</span>
+              <span data-i18n="style.bg">Background</span>
               <input type="color" id="bg" value="#ffffff">
             </label>
           </div>
 
           <div class="field">
-            <label class="check"><input type="checkbox" id="gradient"> Degradado</label>
+            <label class="check"><input type="checkbox" id="gradient"> <span data-i18n="style.gradient">Gradient</span></label>
             <div class="row" id="gradient-opts" hidden>
-              <label class="field grow"><span>Color final</span><input type="color" id="fg2" value="#2563eb"></label>
-              <label class="field grow"><span>Tipo</span>
+              <label class="field grow"><span data-i18n="grad.end">End color</span><input type="color" id="fg2" value="#2563eb"></label>
+              <label class="field grow"><span data-i18n="grad.type">Type</span>
                 <select id="grad-type">
-                  <option value="linear">Lineal</option>
-                  <option value="radial">Radial</option>
+                  <option value="linear" data-i18n="grad.linear">Linear</option>
+                  <option value="radial" data-i18n="grad.radial">Radial</option>
                 </select>
               </label>
             </div>
           </div>
 
           <fieldset class="field group">
-            <legend>Esquinas</legend>
+            <legend data-i18n="corners">Corners</legend>
             <div class="row">
-              <label class="field grow"><span>Marco</span>
+              <label class="field grow"><span data-i18n="corner.frame">Frame</span>
                 <select id="corner-sq">
-                  <option value="">Como los puntos</option>
-                  <option value="square">Cuadrado</option>
-                  <option value="dot">Circular</option>
-                  <option value="extra-rounded">Redondeado</option>
+                  <option value="" data-i18n="corner.auto">Same as dots</option>
+                  <option value="square" data-i18n="corner.square">Square</option>
+                  <option value="dot" data-i18n="corner.round">Round</option>
+                  <option value="extra-rounded" data-i18n="corner.rounded">Rounded</option>
                 </select>
               </label>
-              <label class="field grow"><span>Centro</span>
+              <label class="field grow"><span data-i18n="corner.center">Center</span>
                 <select id="corner-dot">
-                  <option value="">Como los puntos</option>
-                  <option value="square">Cuadrado</option>
-                  <option value="dot">Circular</option>
+                  <option value="" data-i18n="corner.auto">Same as dots</option>
+                  <option value="square" data-i18n="corner.square">Square</option>
+                  <option value="dot" data-i18n="corner.round">Round</option>
                 </select>
               </label>
             </div>
             <div class="row">
-              <label class="check"><input type="checkbox" id="corner-color-on"> Color propio</label>
+              <label class="check"><input type="checkbox" id="corner-color-on"> <span data-i18n="corner.color">Custom color</span></label>
               <input type="color" id="corner-color" value="#000000" class="inline-color" disabled>
             </div>
           </fieldset>
 
-          <p id="contrast-warning" class="warning" hidden>
-            Contraste bajo: el fondo debe ser más claro que el QR o puede no escanear.
+          <p id="contrast-warning" class="warning" data-i18n="contrast.warn" hidden>
+            Low contrast: the background must be lighter than the QR or it may not scan.
           </p>
         </section>
 
         <section class="block">
-          <h2>Calidad</h2>
+          <h2 data-i18n="sec.quality">Quality</h2>
           <label class="field">
-            <span>Corrección de errores</span>
+            <span data-i18n="ecc.label">Error correction</span>
             <select id="ecc">
-              <option value="L">L · 7% (QR más simple)</option>
-              <option value="M">M · 15%</option>
-              <option value="Q">Q · 25%</option>
-              <option value="H" selected>H · 30% (recomendado con logo)</option>
+              <option value="L" data-i18n="ecc.L">L · 7% (simplest QR)</option>
+              <option value="M" data-i18n="ecc.M">M · 15%</option>
+              <option value="Q" data-i18n="ecc.Q">Q · 25%</option>
+              <option value="H" data-i18n="ecc.H" selected>H · 30% (recommended with logo)</option>
             </select>
           </label>
-          <p id="ecc-warning" class="warning" hidden>
-            Con logo, usa nivel Q o H o puede no escanear.
+          <p id="ecc-warning" class="warning" data-i18n="ecc.warn" hidden>
+            With a logo, use level Q or H or it may not scan.
           </p>
 
           <label class="field">
-            <span>Margen: <output id="margin-out">4</output>%</span>
+            <span><span data-i18n="margin.label">Margin</span>: <output id="margin-out">4</output>%</span>
             <input type="range" id="margin" min="0" max="15" step="1" value="4">
           </label>
         </section>
 
         <section class="block">
-          <h2>Plantillas</h2>
-          <p class="hint">Guarda el estilo actual (colores, forma, esquinas, calidad, margen) para reutilizarlo. El contenido no se guarda.</p>
+          <h2 data-i18n="sec.templates">Templates</h2>
+          <p class="hint" data-i18n="tpl.hint">Save the current style (colors, shape, corners, quality, margin) to reuse it. Content is not saved.</p>
           <div class="row">
-            <select id="tpl-select" class="grow" aria-label="Plantillas guardadas"></select>
-            <button type="button" id="tpl-delete" class="secondary" disabled>Eliminar</button>
+            <select id="tpl-select" class="grow" data-i18n-aria="tpl.select" aria-label="Saved templates"></select>
+            <button type="button" id="tpl-delete" class="secondary" data-i18n="btn.delete" disabled>Delete</button>
           </div>
           <div class="row">
-            <input type="text" id="tpl-name" class="grow" placeholder="Nombre de la plantilla" maxlength="60" aria-label="Nombre de la plantilla">
-            <button type="button" id="tpl-save">Guardar</button>
+            <input type="text" id="tpl-name" class="grow" data-i18n-placeholder="tpl.namePlaceholder" placeholder="Template name" maxlength="60" data-i18n-aria="tpl.nameLabel" aria-label="Template name">
+            <button type="button" id="tpl-save" data-i18n="btn.save">Save</button>
           </div>
-          <label class="check"><input type="checkbox" id="tpl-logo" checked> Incluir logo</label>
+          <label class="check"><input type="checkbox" id="tpl-logo" checked> <span data-i18n="tpl.logo">Include logo</span></label>
           <p id="tpl-status" class="status" role="status" aria-live="polite"></p>
         </section>
 
         <section class="block">
-          <h2>Exportación</h2>
+          <h2 data-i18n="sec.export">Export</h2>
           <label class="field">
-            <span>Tamaño de exportación: <output id="export-size-out">1000</output> px</span>
+            <span><span data-i18n="export.size">Export size</span>: <output id="export-size-out">1000</output> px</span>
             <input type="range" id="export-size" min="300" max="2000" step="100" value="1000">
           </label>
 
           <div class="row">
             <label class="field grow">
-              <span>Formato</span>
+              <span data-i18n="export.format">Format</span>
               <select id="format">
                 <option value="png">PNG</option>
                 <option value="jpeg">JPEG</option>
@@ -285,24 +291,24 @@
           </div>
 
           <div class="row">
-            <button type="button" id="download" disabled>Descargar</button>
-            <button type="button" id="copy" class="secondary" disabled>Copiar imagen</button>
-            <button type="button" id="reset" class="secondary">Restablecer</button>
+            <button type="button" id="download" data-i18n="btn.download" disabled>Download</button>
+            <button type="button" id="copy" class="secondary" data-i18n="btn.copy" disabled>Copy image</button>
+            <button type="button" id="reset" class="secondary" data-i18n="btn.reset">Reset</button>
           </div>
           <p id="status" class="status" role="status" aria-live="polite"></p>
         </section>
 
         <section class="block">
-          <h2>Lote</h2>
-          <p class="hint">Un QR por fila, con el estilo, tamaño y formato actuales. Una columna: contenido. Dos columnas: <code>nombre,contenido</code>. Se descarga un ZIP.</p>
+          <h2 data-i18n="sec.batch">Batch</h2>
+          <p class="hint" data-i18n-html="batch.hint">One QR per row, using the current style, size and format. One column: content. Two columns: <code>name,content</code>. Downloads a ZIP.</p>
           <div class="row">
             <input type="file" id="batch-file" accept=".csv,.txt,text/csv,text/plain" hidden>
-            <label for="batch-file" class="btn btn-secondary">Cargar CSV</label>
-            <span class="file-name" id="batch-info">0 filas</span>
+            <label for="batch-file" class="btn btn-secondary" data-i18n="batch.load">Load CSV</label>
+            <span class="file-name" id="batch-info">0 rows</span>
           </div>
-          <textarea id="batch-text" rows="5" placeholder="https://example.com&#10;mi-web,https://example.com&#10;otro,&quot;https://example.com/a,b&quot;" spellcheck="false"></textarea>
+          <textarea id="batch-text" rows="5" spellcheck="false" data-i18n-placeholder="batch.placeholder"></textarea>
           <div class="row">
-            <button type="button" id="batch-run" disabled>Generar ZIP</button>
+            <button type="button" id="batch-run" data-i18n="batch.run" disabled>Generate ZIP</button>
           </div>
           <p id="batch-status" class="status" role="status" aria-live="polite"></p>
         </section>
@@ -310,8 +316,8 @@
 
       <section class="preview" aria-live="polite">
         <div id="qr"></div>
-        <img id="composed" alt="Vista previa del QR con composición" hidden>
-        <p id="placeholder" class="placeholder">Escribe un texto para generar el QR</p>
+        <img id="composed" data-i18n-alt="preview.alt" alt="QR preview with composition" hidden>
+        <p id="placeholder" class="placeholder" data-i18n="preview.placeholder">Type some text to generate the QR</p>
         <p id="verify" class="verify" role="status" hidden></p>
       </section>
     </div>
@@ -320,6 +326,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="js/app.js?v=15"></script>
+  <script src="js/i18n.js?v=16"></script>
+  <script src="js/app.js?v=16"></script>
 </body>
 </html>

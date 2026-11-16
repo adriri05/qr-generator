@@ -300,3 +300,5 @@ fieldset.group legend { padding: 0; margin-bottom: 6px; font-size: 0.875rem; col
   }
   #qr canvas, #qr svg, #composed { max-height: calc(46vh - 70px); }
 }
+
+.top-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }

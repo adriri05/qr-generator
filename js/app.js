@@ -1,5 +1,6 @@
 (() => {
   const $ = (id) => document.getElementById(id);
+  const tr = I18N.t; // `t` is used as a local name in several places below
   const el = {
     preset: $("preset"),
     text: $("text"),
@@ -43,6 +44,7 @@
     copy: $("copy"),
     reset: $("reset"),
     theme: $("theme"),
+    lang: $("lang"),
     status: $("status"),
     qr: $("qr"),
     placeholder: $("placeholder"),
@@ -53,7 +55,6 @@
   // Max bytes in QR version 40 (byte mode) per error correction level.
   const MAX_BYTES = { L: 2953, M: 2331, Q: 1663, H: 1273 };
   const encoder = new TextEncoder();
-  const PLACEHOLDER_DEFAULT = $("placeholder").textContent;
   const SETTINGS_KEY = "qr-generator:settings";
   const LOGO_KEY = "qr-generator:logo";
   const THEME_KEY = "qr-generator:theme";
@@ -254,12 +255,12 @@
 
     el.qr.hidden = !hasData || composeActive();
     el.placeholder.hidden = hasData;
-    el.placeholder.textContent = info.tooLong ? "Contenido demasiado largo para generar el QR" : PLACEHOLDER_DEFAULT;
+    el.placeholder.textContent = info.tooLong ? tr("preview.tooLong") : tr("preview.placeholder");
     el.download.disabled = el.copy.disabled = !hasData;
     el.removeLogo.disabled = !logoDataUrl;
-    el.logoName.textContent = logoName || (logoDataUrl ? "Logo guardado" : "Sin logo");
+    el.logoName.textContent = logoName || (logoDataUrl ? tr("logo.saved") : tr("logo.none"));
     el.bgRemove.disabled = !bgDataUrl;
-    el.bgName.textContent = bgName || (bgDataUrl ? "Imagen guardada" : "Sin imagen");
+    el.bgName.textContent = bgName || (bgDataUrl ? tr("bg.saved") : tr("bg.none"));
     el.logoSizeOut.textContent = `${el.logoSize.value}%`;
     el.exportSizeOut.textContent = el.exportSize.value;
     el.marginOut.textContent = el.margin.value;
@@ -269,8 +270,8 @@
     el.lengthWarning.hidden = !(info.tooLong || info.dense);
     el.lengthWarning.classList.toggle("error", info.tooLong);
     el.lengthWarning.textContent = info.tooLong
-      ? `Contenido demasiado largo (${info.bytes} bytes, máximo ${info.max} con nivel ${el.ecc.value}). Acórtalo o baja el nivel de corrección.`
-      : `Contenido largo (${info.bytes} bytes): el QR será muy denso y puede costar escanearlo. Acórtalo o exporta a mayor tamaño.`;
+      ? tr("len.tooLong", { bytes: info.bytes, max: info.max, level: el.ecc.value })
+      : tr("len.dense", { bytes: info.bytes });
 
     saveSettings();
     if (!hasData) { verifyId++; previewId++; el.verify.hidden = true; el.composed.hidden = true; return; }
@@ -308,8 +309,8 @@
       const img = ctx.getImageData(0, 0, cv.width, cv.height);
       const res = jsQR(img.data, img.width, img.height);
       if (id !== verifyId) return;
-      if (!res) showVerify("fail", "✗ No se pudo leer: simplifica el estilo, sube el contraste o el nivel de corrección");
-      else if (res.data !== expected) showVerify("warn", "⚠ Se lee, pero el contenido decodificado difiere");
+      if (!res) showVerify("fail", tr("verify.fail"));
+      else if (res.data !== expected) showVerify("warn", tr("verify.warn"));
       else el.verify.hidden = true;
     } catch {
       if (id === verifyId) el.verify.hidden = true;
@@ -510,7 +511,7 @@
       bgDataUrl = await readBackground(file);
       bgName = file.name;
     } catch {
-      el.bgName.textContent = "No se pudo leer la imagen";
+      el.bgName.textContent = tr("bg.readError");
       return;
     }
     render();
@@ -536,13 +537,13 @@
       const blob = await renderFinal(getData(), Number(el.exportSize.value), ext);
       saveBlob(blob, `qr.${ext === "jpeg" ? "jpg" : ext}`);
     } catch {
-      say("No se pudo exportar la imagen.");
+      say(tr("export.fail"));
     }
   });
 
   el.copy.addEventListener("click", async () => {
     if (!navigator.clipboard || typeof ClipboardItem === "undefined") {
-      say("Tu navegador no permite copiar imágenes.");
+      say(tr("copy.unsupported"));
       return;
     }
     try {
@@ -550,14 +551,14 @@
       await navigator.clipboard.write([
         new ClipboardItem({ "image/png": renderFinal(getData(), Number(el.exportSize.value), "png") }),
       ]);
-      say("Imagen copiada.");
+      say(tr("copy.ok"));
     } catch {
-      say("No se pudo copiar la imagen.");
+      say(tr("copy.fail"));
     }
   });
 
   el.reset.addEventListener("click", () => {
-    if (!confirm("¿Restablecer todos los ajustes?")) return;
+    if (!confirm(tr("reset.confirm"))) return;
     store.del(SETTINGS_KEY);
     store.del(LOGO_KEY);
     store.del(BG_KEY);
@@ -566,7 +567,6 @@
 
   // Theme: auto (follow OS) -> light -> dark.
   const THEMES = ["auto", "light", "dark"];
-  const LABELS = { auto: "Auto", light: "Claro", dark: "Oscuro" };
   const ICONS = {
     auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>',
     light: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
@@ -575,8 +575,9 @@
   const applyTheme = (t) => {
     if (t === "auto") document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", t);
-    el.theme.innerHTML = `${ICONS[t]}<span>${LABELS[t]}</span>`;
-    el.theme.setAttribute("aria-label", `Tema: ${LABELS[t]}. Pulsa para cambiar`);
+    const label = tr(`theme.${t}`);
+    el.theme.innerHTML = `${ICONS[t]}<span>${label}</span>`;
+    el.theme.setAttribute("aria-label", tr("theme.aria", { name: label }));
   };
   let theme = THEMES.includes(store.get(THEME_KEY)) ? store.get(THEME_KEY) : "auto";
   applyTheme(theme);
@@ -620,7 +621,7 @@
     tpl.select.innerHTML = "";
     const first = document.createElement("option");
     first.value = "";
-    first.textContent = names.length ? "— Elegir plantilla —" : "Sin plantillas guardadas";
+    first.textContent = names.length ? tr("tpl.pick") : tr("tpl.empty");
     tpl.select.append(first);
     names.forEach((n) => {
       const o = document.createElement("option");
@@ -634,7 +635,7 @@
 
   tpl.save.addEventListener("click", () => {
     const name = tpl.name.value.trim();
-    if (!name) { tplSay("Escribe un nombre para la plantilla."); tpl.name.focus(); return; }
+    if (!name) { tplSay(tr("tpl.needName")); tpl.name.focus(); return; }
     const all = readTemplates();
     const existed = Object.prototype.hasOwnProperty.call(all, name);
     const t = { dotType: getDotType() };
@@ -642,11 +643,11 @@
     if (tpl.withLogo.checked && logoDataUrl) t.logo = logoDataUrl;
     all[name] = t;
     if (!store.set(TEMPLATES_KEY, JSON.stringify(all))) {
-      tplSay("No se pudo guardar (almacenamiento lleno). Prueba sin logo.");
+      tplSay(tr("tpl.full"));
       return;
     }
     fillTemplateSelect(name);
-    tplSay(existed ? `Plantilla "${name}" actualizada.` : `Plantilla "${name}" guardada.`);
+    tplSay(tr(existed ? "tpl.updated" : "tpl.saved", { name }));
   });
 
   tpl.select.addEventListener("change", () => {
@@ -664,18 +665,18 @@
     if (typeof t.logo === "string") { logoDataUrl = t.logo; logoName = ""; }
     tpl.name.value = name;
     render();
-    tplSay(`Plantilla "${name}" aplicada.`);
+    tplSay(tr("tpl.applied", { name }));
   });
 
   tpl.del.addEventListener("click", () => {
     const name = tpl.select.value;
-    if (!name || !confirm(`¿Eliminar la plantilla "${name}"?`)) return;
+    if (!name || !confirm(tr("tpl.confirmDelete", { name }))) return;
     const all = readTemplates();
     delete all[name];
     store.set(TEMPLATES_KEY, JSON.stringify(all));
     fillTemplateSelect();
     tpl.name.value = "";
-    tplSay(`Plantilla "${name}" eliminada.`);
+    tplSay(tr("tpl.deleted", { name }));
   });
 
   fillTemplateSelect();
@@ -729,7 +730,7 @@
 
   const updateBatchInfo = () => {
     const n = parseBatch().length;
-    el.batchInfo.textContent = n > MAX_BATCH ? `${n} filas (máximo ${MAX_BATCH})` : `${n} ${n === 1 ? "fila" : "filas"}`;
+    el.batchInfo.textContent = n > MAX_BATCH ? tr("batch.over", { n, max: MAX_BATCH }) : tr(n === 1 ? "batch.row" : "batch.rows", { n });
     el.batchRun.disabled = n === 0 || n > MAX_BATCH;
   };
 
@@ -743,7 +744,7 @@
   });
 
   el.batchRun.addEventListener("click", async () => {
-    if (typeof JSZip !== "function") { el.batchStatus.textContent = "JSZip no disponible (¿sin conexión?)."; return; }
+    if (typeof JSZip !== "function") { el.batchStatus.textContent = tr("batch.noJszip"); return; }
     const items = parseBatch();
     const ext = el.format.value;
     const size = Number(el.exportSize.value);
@@ -754,7 +755,7 @@
     el.batchRun.disabled = true;
     try {
       for (let i = 0; i < items.length; i++) {
-        el.batchStatus.textContent = `Generando ${i + 1}/${items.length}…`;
+        el.batchStatus.textContent = tr("batch.progress", { i: i + 1, n: items.length });
         const { name, data } = items[i];
         if (lengthInfo(data).tooLong) { skipped.push(i + 1); continue; }
         const blob = await renderFinal(data, size, ext);
@@ -765,19 +766,34 @@
         zip.file(`${unique}.${ext === "jpeg" ? "jpg" : ext}`, blob);
       }
       const done = items.length - skipped.length;
-      if (done === 0) { el.batchStatus.textContent = "Ninguna fila se pudo generar (contenido demasiado largo)."; return; }
-      el.batchStatus.textContent = "Comprimiendo…";
+      if (done === 0) { el.batchStatus.textContent = tr("batch.empty"); return; }
+      el.batchStatus.textContent = tr("batch.zipping");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      saveBlob(zipBlob, "qr-lote.zip");
-      el.batchStatus.textContent = `Listo: ${done} QR en el ZIP.` + (skipped.length ? ` Omitidas por largas: filas ${skipped.join(", ")}.` : "");
+      saveBlob(zipBlob, "qr-batch.zip");
+      el.batchStatus.textContent = tr("batch.done", { n: done }) + (skipped.length ? tr("batch.skipped", { rows: skipped.join(", ") }) : "");
     } catch {
-      el.batchStatus.textContent = "Error al generar el lote.";
+      el.batchStatus.textContent = tr("batch.error");
     } finally {
       updateBatchInfo();
     }
   });
 
+  // ---- Language ----
+  const GLOBE = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>';
+  const renderLangBtn = () => { el.lang.innerHTML = `${GLOBE}<span>${I18N.lang.toUpperCase()}</span>`; };
+  const refreshLanguage = () => {
+    I18N.apply();
+    renderLangBtn();
+    applyTheme(theme);
+    fillTemplateSelect(tpl.select.value);
+    updateBatchInfo();
+    render();
+  };
+  el.lang.addEventListener("click", () => { I18N.toggle(); refreshLanguage(); });
+
   loadSettings();
+  I18N.apply();
+  renderLangBtn();
   render();
   updateBatchInfo();
 })();
