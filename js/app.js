@@ -22,8 +22,12 @@
     exportSize: $("export-size"),
     exportSizeOut: $("export-size-out"),
     warning: $("contrast-warning"),
-    dlPng: $("dl-png"),
-    dlSvg: $("dl-svg"),
+    format: $("format"),
+    download: $("download"),
+    copy: $("copy"),
+    reset: $("reset"),
+    theme: $("theme"),
+    status: $("status"),
     qr: $("qr"),
     placeholder: $("placeholder"),
     panels: document.querySelectorAll(".panel[data-preset]"),
@@ -32,6 +36,7 @@
   const SIZE = 300;
   const SETTINGS_KEY = "qr-generator:settings";
   const LOGO_KEY = "qr-generator:logo";
+  const THEME_KEY = "qr-generator:theme";
   let logoDataUrl = null;
   let logoName = "";
 
@@ -42,6 +47,8 @@
     "wifi-ssid", "wifi-pass", "wifi-enc", "wifi-hidden",
     "vc-name", "vc-org", "vc-phone", "vc-email", "vc-url",
     "mail-to", "mail-subject", "mail-body", "tel-number",
+    "sms-number", "sms-body", "wa-number", "wa-text", "geo-lat", "geo-lon",
+    "ev-title", "ev-start", "ev-end", "ev-loc", "format",
   ].map((id) => $(id));
   const isCheck = (i) => i.type === "checkbox";
 
@@ -113,6 +120,36 @@
       const n = v("tel-number").replace(/[^\d+]/g, "");
       return n ? `tel:${n}` : "";
     },
+    sms: () => {
+      const n = v("sms-number").replace(/[^\d+]/g, "");
+      return n ? `SMSTO:${n}:${$("sms-body").value.trim()}` : "";
+    },
+    whatsapp: () => {
+      const n = v("wa-number").replace(/\D/g, "");
+      if (!n) return "";
+      const t = $("wa-text").value.trim();
+      return `https://wa.me/${n}${t ? `?text=${encodeURIComponent(t)}` : ""}`;
+    },
+    geo: () => {
+      const lat = parseFloat(v("geo-lat").replace(",", "."));
+      const lon = parseFloat(v("geo-lon").replace(",", "."));
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return "";
+      if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return "";
+      return `geo:${lat},${lon}`;
+    },
+    event: () => {
+      const title = v("ev-title");
+      const start = v("ev-start");
+      if (!title || !start) return "";
+      // datetime-local "2026-11-16T10:00" -> floating time "20261116T100000"
+      const ics = (d) => d.replace(/[-:]/g, "").padEnd(15, "0");
+      const end = v("ev-end");
+      const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", `SUMMARY:${escVcard(title)}`, `DTSTART:${ics(start)}`];
+      if (end) lines.push(`DTEND:${ics(end)}`);
+      if (v("ev-loc")) lines.push(`LOCATION:${escVcard(v("ev-loc"))}`);
+      lines.push("END:VEVENT", "END:VCALENDAR");
+      return lines.join("\n");
+    },
   };
   const getData = () => (builders[el.preset.value] || builders.text)();
 
@@ -180,7 +217,7 @@
 
     el.qr.hidden = !hasData;
     el.placeholder.hidden = hasData;
-    el.dlPng.disabled = el.dlSvg.disabled = !hasData;
+    el.download.disabled = el.copy.disabled = !hasData;
     el.removeLogo.disabled = !logoDataUrl;
     el.logoName.textContent = logoName || (logoDataUrl ? "Logo guardado" : "Sin logo");
     el.logoSizeOut.textContent = `${el.logoSize.value}%`;
@@ -225,18 +262,66 @@
   });
 
   // Export from a throwaway instance at the chosen size; preview stays untouched.
-  const download = (extension) => {
+  const exportQr = (extension) => {
     const size = Number(el.exportSize.value);
-    const out = new QRCodeStyling({
+    return new QRCodeStyling({
       width: size,
       height: size,
       type: extension === "svg" ? "svg" : "canvas",
       ...buildOptions(),
     });
-    out.download({ name: "qr", extension });
   };
-  el.dlPng.addEventListener("click", () => download("png"));
-  el.dlSvg.addEventListener("click", () => download("svg"));
+
+  let statusTimer;
+  const say = (msg) => {
+    el.status.textContent = msg;
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => { el.status.textContent = ""; }, 2500);
+  };
+
+  el.download.addEventListener("click", () => {
+    const ext = el.format.value;
+    exportQr(ext).download({ name: "qr", extension: ext });
+  });
+
+  el.copy.addEventListener("click", async () => {
+    if (!navigator.clipboard || typeof ClipboardItem === "undefined") {
+      say("Tu navegador no permite copiar imágenes.");
+      return;
+    }
+    try {
+      // Promise form keeps the user-gesture valid in Safari.
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": exportQr("png").getRawData("png") }),
+      ]);
+      say("Imagen copiada.");
+    } catch {
+      say("No se pudo copiar la imagen.");
+    }
+  });
+
+  el.reset.addEventListener("click", () => {
+    if (!confirm("¿Restablecer todos los ajustes?")) return;
+    store.del(SETTINGS_KEY);
+    store.del(LOGO_KEY);
+    location.reload();
+  });
+
+  // Theme: auto (follow OS) -> light -> dark.
+  const THEMES = ["auto", "light", "dark"];
+  const LABELS = { auto: "auto", light: "claro", dark: "oscuro" };
+  const applyTheme = (t) => {
+    if (t === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", t);
+    el.theme.textContent = `Tema: ${LABELS[t]}`;
+  };
+  let theme = THEMES.includes(store.get(THEME_KEY)) ? store.get(THEME_KEY) : "auto";
+  applyTheme(theme);
+  el.theme.addEventListener("click", () => {
+    theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+    store.set(THEME_KEY, theme);
+    applyTheme(theme);
+  });
 
   loadSettings();
   render();

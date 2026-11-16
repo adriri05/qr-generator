@@ -9,7 +9,7 @@ Abrir `index.html` en el navegador (o `npx serve .`).
 1. Elige tipo (texto/URL, WiFi, vCard, email, teléfono) y rellena los datos.
 2. (Opcional) sube un logo y ajusta tamaño.
 3. Elige colores, degradado y estilo de esquinas.
-4. Elige tamaño de exportación y descarga PNG o SVG.
+4. Elige tamaño y formato (PNG, JPEG, WEBP, SVG) y descarga o copia la imagen.
 
 Corrección de errores nivel H fijo para que el logo no rompa la lectura. Si un QR no escanea, baja el tamaño del logo.
 
@@ -26,3 +26,8 @@ Corrección de errores nivel H fijo para que el logo no rompa la lectura. Si un 
 - [x] Tamaño de exportación configurable
 - [x] Persistir ajustes en `localStorage` (texto, logo, tamaño, colores, forma)
 - [x] Deploy GitHub Pages / Vercel
+- [x] Copiar imagen al portapapeles
+- [x] Presets: SMS, WhatsApp, ubicación, evento de calendario
+- [x] Botón de restablecer ajustes
+- [x] Tema claro/oscuro manual
+- [x] Descarga en JPEG/WEBP
